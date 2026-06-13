@@ -19,7 +19,7 @@
     user: "{{ admin_user }}"
     name: dailyreport
     minute: 0
-    hour: 8
+    hour: 4
     job: 'dailyreport {{ jwodder_root }}/etc/utils.toml'
 
 - name: Create update-dns cronjob

@@ -27,4 +27,4 @@
     user: "{{ admin_user }}"
     name: update-dns
     minute: 42
-    job: 'update-dns {{ jwodder_root }}/etc/utils.toml'
+    job: 'chronic update-dns {{ jwodder_root }}/etc/utils.toml'

@@ -2,10 +2,8 @@
 - name: Install essential or useful software
   ansible.builtin.apt:
     name:
-      - apt-file
       - apt-transport-https
       - aptitude
-      # - build-essential
       - ca-certificates
       - curl
       - fail2ban
@@ -15,7 +13,7 @@
       - miscfiles
       - moreutils  # chronic
       - net-tools  # netstat
-      - patch
+      - pipx
       - plocate
       - python3
       - python3-dev
@@ -33,13 +31,6 @@
       - zip
     state: present
     update_cache: true
-
-- name: Install software sans recommended dependencies
-  ansible.builtin.apt:
-    name:
-      - pipx
-    state: present
-    update_cache: false
 
 - name: Create swap space
   ansible.builtin.command: fallocate -l {{ ansible_facts["memtotal_mb"] * 2 }}M /swapfile

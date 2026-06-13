@@ -13,15 +13,16 @@ Target system requirements:
 Required Variables
 ==================
 
-`backup` role
--------------
-
     backup_dropbox_oauth_app_key
     backup_dropbox_oauth_app_secret
     backup_dropbox_oauth_app_refresh_token
     backup_recipient_pubkey
 
-`logsdb` role
--------------
+    dailyreport_sender
+    dailyreport_recipient
+    mailgun_domain
+    mailgun_api_key
 
-    dailyreport_recipient  # if dailyreport enabled
+    dynamic_dns_domain
+    dynamic_dns_subdomain
+    digitalocean_token

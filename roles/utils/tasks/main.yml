@@ -1,0 +1,29 @@
+---
+- name: Install thoth-utils for admin user
+  community.general.pipx:
+    name: thoth-utils
+    source: git+https://github.com/jwodder/thoth-utils
+    state: "{{ upgrade_thoth_utils | ternary('latest', 'install') }}"
+  become_user: "{{ admin_user }}"
+
+- name: Create thoth-utils config file
+  template:
+    src: utils.toml
+    dest: "{{ jwodder_root }}/etc/utils.toml"
+    owner: "{{ admin_user }}"
+    mode: "0600"
+
+- name: Create dailyreport cronjob
+  ansible.builtin.cron:
+    user: "{{ admin_user }}"
+    name: dailyreport
+    minute: 0
+    hour: 8
+    job: 'dailyreport {{ jwodder_root }}/etc/utils.toml'
+
+- name: Create update-dns cronjob
+  ansible.builtin.cron:
+    user: "{{ admin_user }}"
+    name: update-dns
+    minute: 42
+    job: 'update-dns {{ jwodder_root }}/etc/utils.toml'

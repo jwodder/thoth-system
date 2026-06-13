@@ -28,7 +28,7 @@
 
 # This has to run before we can enable the timers, so using a handler isn't an
 # option here.
-- name: Reload systemd
+- name: Reload systemd  # noqa: no-handler
   ansible.builtin.systemd:
     daemon_reload: true
   when: utils_units is changed

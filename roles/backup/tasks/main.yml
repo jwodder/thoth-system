@@ -11,10 +11,10 @@
   install_age:
     minversion: v1.3.0
 
-- name: Install bin/backdroplet
+- name: Install bin/mkbackup
   ansible.builtin.template:
-    src: backdroplet
-    dest: "{{ jwodder_root }}/bin/backdroplet"
+    src: mkbackup
+    dest: "{{ jwodder_root }}/bin/mkbackup"
     owner: "{{ admin_user }}"
     mode: "0755"
 
@@ -47,10 +47,10 @@
 
 - name: Create backup cronjob
   ansible.builtin.copy:
-    dest: /etc/cron.daily/backdroplet
+    dest: /etc/cron.daily/mkbackup
     content: |
       #!/bin/bash
       # Run every other Sunday:
-      (( ($(date +%s) / 86400 - 3) % 14 )) || chronic {{ jwodder_root | quote }}/bin/backdroplet
+      (( ($(date +%s) / 86400 - 3) % 14 )) || chronic {{ jwodder_root | quote }}/bin/mkbackup
     owner: root
     mode: "0755"

@@ -1,0 +1,56 @@
+---
+- name: Add git-shell to /etc/shells
+  ansible.builtin.lineinfile:
+    dest: /etc/shells
+    line: /usr/bin/git-shell
+
+- name: Create git user
+  ansible.builtin.user:
+    name: git
+    shell: /usr/bin/git-shell
+    home: /home/git
+    move_home: true
+    comment: Git
+
+- name: Add authorized_keys to git
+  ansible.posix.authorized_key:
+    user: git
+    key: "{{ item }}"
+    manage_dir: true
+  with_items: "{{ git_authorized_keys }}"
+
+- name: Format attached drive
+  community.general.filesystem:
+    dev: /dev/sda
+    fstype: ext4
+
+- name: Get UUID of attached drive
+  ansible.builtin.command: blkid -o value -s UUID /dev/sda
+  changed_when: false
+  register: git_blkid
+
+- name: Create /srv/git
+  ansible.builtin.file:
+    path: /srv/git
+    state: directory
+    owner: git
+    mode: "0755"
+
+- name: Mount attached drive at /srv/git
+  ansible.posix.mount:
+    src: "UUID={{ git_blkid.stdout }}"
+    path: /srv/git
+    fstype: ext4
+    opts: defaults,nofail
+    dump: '0'
+    passno: '0'
+    state: mounted
+
+- name: Grant git user ownership of everything in /srv/git
+  ansible.builtin.file:
+    path: /srv/git
+    state: directory
+    follow: false
+    recurse: true
+    owner: git
+    mode: u+rwX

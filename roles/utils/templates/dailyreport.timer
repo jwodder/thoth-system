@@ -1,0 +1,9 @@
+[Unit]
+Description=Send daily report e-mail (timer)
+
+[Timer]
+Unit=dailyreport.service
+OnCalendar=*-*-* 4:00:00
+
+[Install]
+WantedBy=timers.target

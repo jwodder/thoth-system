@@ -1,0 +1,9 @@
+[Unit]
+Description=Update system DNS record hourly (timer)
+
+[Timer]
+Unit=update-dns.service
+OnCalendar=*-*-* *:42:00
+
+[Install]
+WantedBy=timers.target

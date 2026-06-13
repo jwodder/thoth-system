@@ -1,0 +1,9 @@
+[Unit]
+Description=Update system DNS record
+
+[Service]
+Type=oneshot
+ExecStart=/home/{{ admin_user }}/.local/bin/update-dns {{ jwodder_root }}/etc/utils.toml
+#ExecStopPost=/bin/sh -c 'if [ "$$SERVICE_RESULT" != success ]; then /usr/local/bin/mail-systemd-failure %n; fi'
+User={{ admin_user }}
+Group={{ admin_user }}

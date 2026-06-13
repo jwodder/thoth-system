@@ -14,17 +14,30 @@
     owner: "{{ admin_user }}"
     mode: "0600"
 
-- name: Create dailyreport cronjob
-  ansible.builtin.cron:
-    user: "{{ admin_user }}"
-    name: dailyreport
-    minute: 0
-    hour: 4
-    job: 'dailyreport {{ jwodder_root }}/etc/utils.toml'
+- name: Configure systemd units
+  ansible.builtin.template:
+    src: "{{ item }}"
+    dest: /etc/systemd/system/{{ item }}
+    mode: "0644"
+  with_items:
+    - dailyreport.service
+    - dailyreport.timer
+    - update-dns.service
+    - update-dns.timer
+  register: utils_units
 
-- name: Create update-dns cronjob
-  ansible.builtin.cron:
-    user: "{{ admin_user }}"
-    name: update-dns
-    minute: 42
-    job: 'chronic update-dns {{ jwodder_root }}/etc/utils.toml'
+# This has to run before we can enable the timers, so using a handler isn't an
+# option here.
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: true
+  when: utils_units is changed
+
+- name: Enable & start systemd timers
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+  with_items:
+    - dailyreport.timer
+    - update-dns.timer

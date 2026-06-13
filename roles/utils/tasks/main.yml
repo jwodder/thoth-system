@@ -4,10 +4,11 @@
     name: thoth-utils
     source: git+https://github.com/jwodder/thoth-utils
     state: "{{ upgrade_thoth_utils | ternary('latest', 'install') }}"
+  become: true
   become_user: "{{ admin_user }}"
 
 - name: Create thoth-utils config file
-  template:
+  ansible.builtin.template:
     src: utils.toml
     dest: "{{ jwodder_root }}/etc/utils.toml"
     owner: "{{ admin_user }}"

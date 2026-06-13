@@ -5,7 +5,7 @@
       - apt-file
       - apt-transport-https
       - aptitude
-      #- build-essential
+      # - build-essential
       - ca-certificates
       - curl
       - fail2ban

@@ -4,6 +4,6 @@ Description=Update system DNS record
 [Service]
 Type=oneshot
 ExecStart=/home/{{ admin_user }}/.local/bin/update-dns {{ jwodder_root }}/etc/utils.toml
-#ExecStopPost=/bin/sh -c 'if [ "$$SERVICE_RESULT" != success ]; then /usr/local/bin/mail-systemd-failure %n; fi'
+ExecStopPost=/bin/sh -c 'if [ "$$SERVICE_RESULT" != success ]; then /home/{{ admin_user }}/.local/bin/mail-systemd-failure {{ jwodder_root }}/etc/utils.toml %n; fi'
 User={{ admin_user }}
 Group={{ admin_user }}

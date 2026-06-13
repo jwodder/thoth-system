@@ -1,0 +1,8 @@
+[Unit]
+Description=Make backup of data
+
+[Service]
+Type=oneshot
+# Run every other Sunday:
+ExecStart=/bin/bash -c '(( ($(date +%s) / 86400 - 3) % 14 )) || {{ jwodder_root }}/bin/mkbackup'
+ExecStopPost=/bin/sh -c 'if [ "$$SERVICE_RESULT" != success ]; then /home/{{ admin_user }}/.local/bin/mail-systemd-failure {{ jwodder_root }}/etc/utils.toml %n; fi'

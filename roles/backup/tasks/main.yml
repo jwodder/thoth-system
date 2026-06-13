@@ -45,12 +45,25 @@
     owner: "{{ admin_user }}"
     mode: "0644"
 
-- name: Create backup cronjob
-  ansible.builtin.copy:
-    dest: /etc/cron.daily/mkbackup
-    content: |
-      #!/bin/bash
-      # Run every other Sunday:
-      (( ($(date +%s) / 86400 - 3) % 14 )) || chronic {{ jwodder_root | quote }}/bin/mkbackup
-    owner: root
-    mode: "0755"
+- name: Configure systemd units
+  ansible.builtin.template:
+    src: "{{ item }}"
+    dest: /etc/systemd/system/{{ item }}
+    mode: "0644"
+  with_items:
+    - mkbackup.service
+    - mkbackup.timer
+  register: backup_units
+
+# This has to run before we can enable the timer, so using a handler isn't an
+# option here.
+- name: Reload systemd  # noqa: no-handler
+  ansible.builtin.systemd:
+    daemon_reload: true
+  when: backup_units is changed
+
+- name: Enable & start systemd timer
+  ansible.builtin.systemd:
+    name: mkbackup.timer
+    enabled: true
+    state: started

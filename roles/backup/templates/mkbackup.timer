@@ -1,0 +1,9 @@
+[Unit]
+Description=Make backup of data (timer)
+
+[Timer]
+Unit=mkbackup.service
+OnCalendar=daily
+
+[Install]
+WantedBy=timers.target

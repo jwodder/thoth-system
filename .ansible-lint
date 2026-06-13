@@ -1,0 +1,9 @@
+---
+strict: true
+exclude_paths:
+  - host_vars/*/secrets.yml
+skip_list:
+  - yaml[commas]
+  - yaml[colons]
+
+# vim:set et ft=yaml sts=2:

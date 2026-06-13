@@ -1,0 +1,56 @@
+---
+- name: Download & install Dropbox-Uploader
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/andreafabrizi/Dropbox-Uploader/{{ backup_dropbox_uploader_version }}/dropbox_uploader.sh
+    dest: /usr/local/bin/dropbox_uploader
+    owner: root
+    mode: "0755"
+    force: true
+
+- name: Install age
+  install_age:
+    minversion: v1.3.0
+
+- name: Install bin/backdroplet
+  ansible.builtin.template:
+    src: backdroplet
+    dest: "{{ jwodder_root }}/bin/backdroplet"
+    owner: "{{ admin_user }}"
+    mode: "0755"
+
+- name: Install share/backup.exclude
+  ansible.builtin.copy:
+    src: share/backup.exclude
+    dest: "{{ jwodder_root }}/share/backup.exclude"
+    owner: "{{ admin_user }}"
+    mode: "0644"
+
+- name: Store Dropbox credentials
+  ansible.builtin.copy:
+    dest: "{{ jwodder_root }}/etc/secret/dropbox_uploader"
+    content: |
+      CONFIGFILE_VERSION=2.0
+      OAUTH_APP_KEY={{ backup_dropbox_oauth_app_key | quote }}
+      OAUTH_APP_SECRET={{ backup_dropbox_oauth_app_secret | quote }}
+      OAUTH_REFRESH_TOKEN={{ backup_dropbox_oauth_app_refresh_token | quote }}
+    owner: root
+    group: root
+    mode: "0600"
+
+- name: Store backup recipient pubkey
+  ansible.builtin.copy:
+    dest: "{{ jwodder_root }}/etc/backup-recipient.txt"
+    content: |
+      {{ backup_recipient_pubkey }}
+    owner: "{{ admin_user }}"
+    mode: "0644"
+
+- name: Create backup cronjob
+  ansible.builtin.copy:
+    dest: /etc/cron.daily/backdroplet
+    content: |
+      #!/bin/bash
+      # Run every other Sunday:
+      (( ($(date +%s) / 86400 - 3) % 14 )) || chronic {{ jwodder_root | quote }}/bin/backdroplet
+    owner: root
+    mode: "0755"

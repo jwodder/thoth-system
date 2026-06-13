@@ -1,0 +1,199 @@
+---
+- name: Install essential or useful software
+  ansible.builtin.apt:
+    name:
+      - apt-file
+      - apt-transport-https
+      - aptitude
+      #- build-essential
+      - ca-certificates
+      - curl
+      - fail2ban
+      - git
+      - htop
+      - jq
+      - miscfiles
+      - moreutils  # chronic
+      - net-tools  # netstat
+      - patch
+      - plocate
+      - python3
+      - python3-dev
+      - python3-pip
+      - python3-prettytable
+      - python3-requests  # Required for `install_age` module
+      - python3-venv
+      - ripgrep
+      - software-properties-common  # apt-add-repository
+      - tree
+      - ufw
+      - unattended-upgrades
+      - unzip
+      - wget
+      - zip
+    state: present
+    update_cache: true
+
+- name: Install software sans recommended dependencies
+  ansible.builtin.apt:
+    name:
+      - pipx
+    state: present
+    update_cache: false
+
+- name: Create swap space
+  ansible.builtin.command: fallocate -l {{ ansible_facts["memtotal_mb"] * 2 }}M /swapfile
+  args:
+    creates: /swapfile
+  register: base_created_swap
+
+- name: Create swapfile  # noqa: no-handler
+  when: base_created_swap is changed
+  block:
+    - name: Set swapfile mode
+      ansible.builtin.file:
+        path: /swapfile
+        mode: "0600"
+    - name: Make swapfile swappy
+      ansible.builtin.command: mkswap /swapfile
+      changed_when: true
+    - name: Add swapfile to fstab
+      ansible.builtin.lineinfile:
+        dest: /etc/fstab
+        line: "/swapfile none swap sw 0 0"
+    - name: Enable swapfile
+      ansible.builtin.command: swapon /swapfile
+      changed_when: true
+
+- name: Deny all incoming connections
+  community.general.ufw:
+    policy: deny
+    proto: any
+    direction: incoming
+
+- name: Allow incoming SSH connections
+  community.general.ufw:
+    rule: allow
+    to_ip: any
+    to_port: 22
+    proto: any
+    direction: in
+
+- name: Enable ufw
+  community.general.ufw:
+    state: enabled
+
+- name: Keep UFW messages from being logged to files other than ufw.log
+  ansible.builtin.lineinfile:
+    dest: /etc/rsyslog.d/20-ufw.conf
+    regexp: '^\s*#?\s*&\s+(~|stop)\s*$'
+    line: '& stop'
+    insertafter: EOF
+    backup: true
+  notify:
+    - Restart rsyslog
+
+- name: Give some syslog facilities their own logfiles
+  ansible.builtin.lineinfile:
+    dest: /etc/rsyslog.d/50-default.conf
+    regexp: '^#?{{ item.key }}\s+{{ item.value }}$'
+    line: '{{ item.key }} {{ item.value }}'
+    backup: true
+  with_dict:
+    "cron.*": /var/log/cron.log
+    "user.*": -/var/log/user.log
+  notify:
+    - Restart rsyslog
+
+- name: Configure SSH
+  ansible.builtin.copy:
+    src: sshd.conf
+    dest: /etc/ssh/sshd_config.d/99jwodder.conf
+    owner: root
+    mode: "0644"
+  notify:
+    - Restart SSHd
+
+- name: Configure PAM to show the "Last login" and "Failed logins" messages
+  ansible.builtin.lineinfile:
+    dest: /etc/pam.d/sshd
+    # Insert between the pam_env lines and the pam_selinux line
+    insertafter: 'pam_env'
+    line: "{{ item }}"
+    backup: true
+  with_items:
+    # Note that the lines will & must appear in the opposite order in the
+    # configured file.
+    - 'session optional    pam_lastlog.so silent noupdate showfailed'
+    - 'session [default=1] pam_lastlog.so nowtmp showfailed'
+
+- name: Disable cruft in login message
+  ansible.builtin.command: mv -f /etc/update-motd.d/{{ item }} /etc/update-motd.d/{{ item }}.off
+  args:
+    removes: /etc/update-motd.d/{{ item }}
+  with_items:
+    - '00-header'
+    - '10-help-text'
+
+- name: Disable live news in MOTD
+  ansible.builtin.lineinfile:
+    dest: /etc/default/motd-news
+    regexp: '^\s*#?\s*ENABLED='
+    line: 'ENABLED=0'
+
+- name: Configure APT
+  ansible.builtin.copy:
+    src: apt.conf
+    dest: /etc/apt/apt.conf.d/99jwodder
+    owner: root
+    mode: "0644"
+
+- name: Configure needrestart
+  ansible.builtin.copy:
+    src: needrestart.conf
+    dest: /etc/needrestart/conf.d/99jwodder.conf
+    owner: root
+    mode: "0644"
+
+- name: Enable unattended upgrades
+  ansible.builtin.debconf:
+    name: unattended-upgrades
+    question: unattended-upgrades/enable_auto_updates
+    vtype: boolean
+    value: true
+  notify:
+    - Enable new unattended-upgrades settings
+
+- name: Configure fail2ban
+  ansible.builtin.copy:
+    src: "fail2ban/{{ item }}"
+    dest: "/etc/fail2ban/{{ item }}"
+    owner: root
+    mode: "0644"
+    backup: true
+  with_items:
+    - fail2ban.d/dbpurgeage.local
+    - jail.d/defaults.local
+    - jail.d/recidive.local
+    - jail.d/sshd.local
+  notify:
+    - Restart fail2ban
+
+- name: Create journald.conf.d
+  ansible.builtin.file:
+    path: /etc/systemd/journald.conf.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Configure journald
+  ansible.builtin.copy:
+    src: journald.conf
+    dest: /etc/systemd/journald.conf.d/jwodder.conf
+    owner: root
+    group: root
+    mode: "0644"
+    backup: true
+  notify:
+    - Restart journald

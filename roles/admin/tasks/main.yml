@@ -1,0 +1,71 @@
+---
+- name: Assert that admin user is not root
+  ansible.builtin.assert:
+    that: 'admin_user != "root"'
+
+- name: Store admin_user var for later roles
+  ansible.builtin.set_fact:
+    # This makes the variable accessible to subsequent roles, right?
+    admin_user: "{{ admin_user }}"
+
+# Creating a new group with sudo powers is a workaround that allows the admin
+# user to use `sudo` without their home directory being defiled by the
+# `.sudo_as_admin_successful` file.
+- name: Create sudmin group
+  ansible.builtin.group:
+    name: sudmin
+    state: present
+
+- name: Grant sudmin group sudo powers
+  ansible.builtin.lineinfile:
+    dest: /etc/sudoers.d/jwodder
+    line: '%sudmin ALL=(ALL:ALL) ALL'
+    validate: 'visudo -cf %s'
+    owner: root
+    group: root
+    mode: "0440"
+    create: true
+    backup: true
+
+- name: Create admin user
+  ansible.builtin.user:
+    name: "{{ admin_user }}"
+    groups: adm,staff,sudmin,users
+    # `adm` membership lets me read files in `/var/log` without the need for
+    # `sudo`.
+    append: true
+    shell: /bin/bash
+    home: "/home/{{ admin_user }}"
+    move_home: true
+    comment: "{{ admin_gecos }}"
+    generate_ssh_key: true
+    ssh_key_type: ed25519
+    ssh_key_comment: "{{ admin_user }}@{{ ansible_facts['hostname'] }}"
+
+- name: Add authorized_keys to admin
+  ansible.posix.authorized_key:
+    user: "{{ admin_user }}"
+    key: "{{ item }}"
+    manage_dir: true
+  with_items: "{{ admin_authorized_keys }}"
+
+- name: Give admin special sudo powers
+  ansible.builtin.lineinfile:
+    dest: /etc/sudoers.d/jwodder
+    line: '{{ admin_user }} ALL=(ALL:ALL) NOPASSWD: /usr/sbin/ufw, /usr/bin/less'
+    validate: 'visudo -cf %s'
+    owner: root
+    group: root
+    mode: "0440"
+    backup: true
+
+- name: Set admin's crontab variables
+  community.general.cronvar:
+    user: "{{ admin_user }}"
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+  with_dict:
+    CONTENT_TYPE: 'text/plain; charset="utf-8"'
+    LANG: C.UTF-8
+    LC_ALL: C.UTF-8
+    PATH: '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/{{ admin_user }}/.local/bin'

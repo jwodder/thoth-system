@@ -26,3 +26,6 @@ Required Variables
     dynamic_dns_domain
     dynamic_dns_subdomain
     digitalocean_token
+
+    systemd_failure_sender
+    systemd_failure_recipient

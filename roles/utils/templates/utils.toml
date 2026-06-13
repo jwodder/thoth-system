@@ -1,15 +1,19 @@
+[dailyreport]
+sender = "{{ dailyreport_sender }}"
+recipient = "{{ dailyreport_recipient }}"
+mailbox = "/var/mail/{{ admin_user }}"
+disks = {{ dailyreport_disks | tojson }}
+
+[mail-systemd-failure]
+sender = "{{ systemd_failure_sender }}"
+recipient = "{{ systemd_failure_recipient }}"
+
 [update-dns]
 ipv4 = true
 ipv6 = false
 domain = "{{ dynamic_dns_domain }}"
 subdomain = "{{ dynamic_dns_subdomain }}"
 digital_ocean_token = "{{ digitalocean_token }}"
-
-[dailyreport]
-sender = "{{ dailyreport_sender }}"
-recipient = "{{ dailyreport_recipient }}"
-mailbox = "/var/mail/{{ admin_user }}"
-disks = {{ dailyreport_disks | tojson }}
 
 [outgoing]
 method = "mailgun"

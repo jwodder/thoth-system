@@ -1,7 +1,7 @@
 [dailyreport]
 sender = "{{ dailyreport_sender }}"
 recipient = "{{ dailyreport_recipient }}"
-mailbox = "/var/mail/{{ admin_user }}"
+mbox-dir = "/var/mail"
 disks = {{ dailyreport_disks | tojson }}
 
 [mail-systemd-failure]

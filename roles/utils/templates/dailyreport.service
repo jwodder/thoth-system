@@ -3,7 +3,7 @@ Description=Send daily report e-mail
 
 [Service]
 Type=oneshot
-ExecStart=/home/{{ admin_user }}/.local/bin/dailyreport {{ jwodder_root }}/etc/utils.toml
-ExecStopPost=/bin/sh -c 'if [ "$$SERVICE_RESULT" != success ]; then /home/{{ admin_user }}/.local/bin/mail-systemd-failure {{ jwodder_root }}/etc/utils.toml %n; fi'
+ExecStart=/home/{{ admin_user|quote }}/.local/bin/dailyreport {{ jwodder_root|quote }}/etc/utils.toml
+ExecStopPost=/home/{{ admin_user|quote }}/.local/bin/mail-systemd-failure {{ jwodder_root|quote }}/etc/utils.toml %n
 User={{ admin_user }}
 Group={{ admin_user }}

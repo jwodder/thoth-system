@@ -14,7 +14,6 @@
     - "{{ jwodder_root }}/bin"
     - "{{ jwodder_root }}/etc"
     - "{{ jwodder_root }}/share"
-    - "{{ jwodder_root }}/venvs"
 
 - name: Create secrets directory
   ansible.builtin.file:
@@ -23,17 +22,3 @@
     owner: root
     group: root
     mode: "0700"
-
-- name: Create logs directory
-  ansible.builtin.file:
-    path: "{{ jwodder_root }}/logs"
-    state: directory
-    owner: "{{ admin_user }}"
-    group: syslog
-    mode: "0775"
-
-- name: Keep venvs directory from being backed up
-  ensure_file:
-    path: "{{ jwodder_root }}/venvs/.norsync"
-    owner: "{{ admin_user }}"
-    mode: "0644"

@@ -94,6 +94,21 @@
     - 'session optional    pam_lastlog.so silent noupdate showfailed'
     - 'session [default=1] pam_lastlog.so nowtmp showfailed'
 
+- name: Configure mail behavior on SSH login
+  # This change accomplishes the following:
+  # - Removes the default "noenv" option so that $MAIL is set
+  # - Adds the "quiet" option so that no message is printed if the default
+  #   $MAIL is empty
+  ansible.builtin.lineinfile:
+    dest: /etc/pam.d/sshd
+    regexp: '^(session\s+optional\s+pam_mail\.so)'
+    # The version of /etc/pam.d/sshd provided by the openssh-server package has
+    # a couple lines marked with "# [1]", and this is one of them.  I don't
+    # know what it's for, but I'm preserving it.
+    line: '\1 standard quiet # [1]'
+    backrefs: true
+    backup: true
+
 - name: Disable cruft in login message
   ansible.builtin.command: mv -f /etc/update-motd.d/{{ item }} /etc/update-motd.d/{{ item }}.off
   args:

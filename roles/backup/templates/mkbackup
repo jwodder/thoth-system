@@ -1,41 +1,40 @@
 #!/bin/bash
 ((EUID == 0)) || exec sudo "$0" "$@"
 
+set -eux -o pipefail
+
 if [ "$1" = "--rsync-only" ]
 then rsync_only=1
      shift
 fi
 
-ROOT=/var/backups/jwodder
+backup_root=/var/backups/jwodder/"$(hostname)"
+mkdir -p "$backup_root"
 
-set -eux
-mkdir -p "$ROOT"
+jwodder_root="$(dirname "$(dirname "$(readlink -f "$0")")")"
 
-JWODDER_ROOT="$(dirname "$(dirname "$(readlink -f "$0")")")"
-
-for dir in /home /srv/git "$JWODDER_ROOT"
+for dir in /home /srv/git "$jwodder_root"
 do if [ -e "$dir" ]
    then rsync -avRF --delete --delete-excluded \
-              --exclude="$JWODDER_ROOT/etc/secret" \
-              --exclude-from="$JWODDER_ROOT/share/backup.exclude" \
+              --exclude="$jwodder_root/etc/secret" \
+              --exclude-from="$jwodder_root/share/backup.exclude" \
               --exclude-from=<(find "$dir" -type d -exec test -e {}/.norsync ';' -prune -print) \
-              "$dir" "$ROOT"
-   else rm -rf "$ROOT$dir"
+              "$dir" "$backup_root"
+   else rm -rf "$backup_root$dir"
    fi
 done
 
-crontab -l -u {{ admin_user | quote }} > "$ROOT"/{{ admin_user | quote }}.crontab
+crontab -l -u {{ admin_user | quote }} > "$backup_root"/{{ admin_user | quote }}.crontab
 
 [ -z "$rsync_only" ] || exit 0
 
-cd "$ROOT/.."
-TARBALL=/var/backups/`hostname`-`date -u +%Y%m%dT%H%M%SZ`.tgz
-tar zcf "$TARBALL" "$(basename "$ROOT")"
-
-/usr/local/bin/age -e -R /opt/jwodder/etc/backup-recipient.txt -o "$TARBALL.age" "$TARBALL"
+cd "$backup_root/.."
+outfile=/var/backups/`hostname`-`date -u +%Y%m%dT%H%M%SZ`.tgz.age
+tar zc "$(basename "$backup_root")" \
+    | /usr/local/bin/age -e -R "$jwodder_root/etc/backup-recipient.txt" -o "$outfile"
 
 /usr/local/bin/dropbox_uploader \
-    -f "$JWODDER_ROOT/etc/secret/dropbox_uploader" \
-    upload "$TARBALL.age" /Backups/
+    -f "$jwodder_root/etc/secret/dropbox_uploader" \
+    upload "$outfile" /Backups/
 
-rm -f "$TARBALL" "$TARBALL.age"
+rm -f "$outfile"

@@ -4,6 +4,7 @@ Description=Send daily report e-mail (timer)
 [Timer]
 Unit=dailyreport.service
 OnCalendar=*-*-* 4:00:00
+Persistent=true
 
 [Install]
 WantedBy=timers.target

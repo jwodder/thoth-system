@@ -4,6 +4,7 @@ Description=Update system DNS record hourly (timer)
 [Timer]
 Unit=update-dns.service
 OnCalendar=*-*-* *:42:00
+Persistent=true
 
 [Install]
 WantedBy=timers.target

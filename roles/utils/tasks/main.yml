@@ -3,7 +3,7 @@
   community.general.pipx:
     name: thoth-utils
     source: git+https://github.com/jwodder/thoth-utils
-    state: "{{ upgrade_thoth_utils | ternary('latest', 'install') }}"
+    state: latest
   become: true
   become_user: "{{ admin_user }}"
 

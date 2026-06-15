@@ -1,3 +1,2 @@
 ---
-upgrade_thoth_utils: false  # noqa: var-naming[no-role-prefix]
 dailyreport_disks: ["/", "/srv/git", "/mnt/scratch"]  # noqa: var-naming[no-role-prefix]

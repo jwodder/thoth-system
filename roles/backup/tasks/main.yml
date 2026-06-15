@@ -20,7 +20,7 @@
 
 - name: Install share/backup.exclude
   ansible.builtin.copy:
-    src: share/backup.exclude
+    src: backup.exclude
     dest: "{{ jwodder_root }}/share/backup.exclude"
     owner: "{{ admin_user }}"
     mode: "0644"

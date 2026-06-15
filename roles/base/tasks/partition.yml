@@ -29,7 +29,7 @@
     - sda2
   register: base_format
 
-- name: Re-collect facts to get new device UUIDs
+- name: Re-collect facts to get new device UUIDs  # noqa: no-handler
   ansible.builtin.setup:
     gather_subset: "!all,!min,devices"
   when: base_format is changed

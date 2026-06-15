@@ -174,3 +174,9 @@
     backup: true
   notify:
     - Restart journald
+
+- name: Set up git user
+  ansible.builtin.import_tasks: git.yml
+
+- name: Set up attached drive
+  ansible.builtin.import_tasks: partition.yml

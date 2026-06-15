@@ -1,0 +1,28 @@
+---
+- name: Add git-shell to /etc/shells
+  ansible.builtin.lineinfile:
+    dest: /etc/shells
+    line: /usr/bin/git-shell
+
+- name: Create git group
+  ansible.builtin.group:
+    name: git
+    state: present
+
+- name: Create git user
+  ansible.builtin.user:
+    name: git
+    group: git
+    groups: staff,users
+    append: true
+    shell: /usr/bin/git-shell
+    home: /home/git
+    move_home: true
+    comment: Git
+
+- name: Add authorized_keys to git
+  ansible.posix.authorized_key:
+    user: git
+    key: "{{ item }}"
+    manage_dir: true
+  with_items: "{{ git_authorized_keys }}"

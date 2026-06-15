@@ -1,4 +1,4 @@
 ---
 jwodder_root: /opt/jwodder  # noqa: var-naming[no-role-prefix]
 dropbox_uploader_version: 11fb8f7  # 2021-09-23  # noqa: var-naming[no-role-prefix]
-dailyreport_disks: ["/", "/srv/git", "/mnt/scratch"]  # noqa: var-naming[no-role-prefix]
+dailyreport_disks: ["/", "/srv"]  # noqa: var-naming[no-role-prefix]

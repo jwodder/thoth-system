@@ -10,72 +10,35 @@
     that: base_drive_name is defined
     fail_msg: "Could not find drive with ID {{ drive_id }}"
 
-- name: Partition attached drive
-  # Based on my reading of the module source, if the partition already exists
-  # and the label & flags have the values given here, then — as long as
-  # `resize` is set to `false` — nothing will be altered.
-  community.general.parted:
-    device: "/dev/disk/by-id/{{ drive_id }}"
-    number: "{{ item.number }}"
-    state: present
-    resize: false
-    flags: []
-    label: gpt
-    part_start: "{{ item.part_start }}"
-    part_end: "{{ item.part_end }}"
-    fs_type: ext4
-  loop:
-    - {number: 1, part_start: 0%, part_end: 50%}
-    - {number: 2, part_start: 50%, part_end: 100%}
-
-- name: Format attached drive partitions
+- name: Format attached drive
   community.general.filesystem:
-    dev: "/dev/disk/by-id/{{ drive_id }}-part{{ item }}"
+    dev: "/dev/disk/by-id/{{ drive_id }}"
     fstype: ext4
-  with_items:
-    - 1
-    - 2
   register: base_format
 
-- name: Re-collect facts to get new device UUIDs  # noqa: no-handler
+- name: Re-collect facts to get new device UUID  # noqa: no-handler
   ansible.builtin.setup:
     gather_subset: "!all,!min,devices"
   when: base_format is changed
 
-- name: Create /srv/git
+- name: Create /srv
   ansible.builtin.file:
     path: /srv/git
     state: directory
-    owner: git
+    owner: root
     mode: "0755"
 
-- name: Mount drive partition 1 at /srv/git
+- name: Mount drive at /srv/git
   ansible.posix.mount:
     src: "UUID={{ ansible_facts['devices'][base_drive_name]['partitions'][base_drive_name + '1']['uuid'] }}"
-    path: /srv/git
+    path: /srv
     fstype: ext4
     opts: defaults,nofail,discard
     dump: '0'
     passno: '0'
     state: mounted
 
-- name: Create /mnt/scratch
-  ansible.builtin.file:
-    path: /mnt/scratch
-    state: directory
-    mode: "0755"
-
-- name: Mount sda2 at /mnt/scratch
-  ansible.posix.mount:
-    src: "UUID={{ ansible_facts['devices'][base_drive_name]['partitions'][base_drive_name + '2']['uuid'] }}"
-    path: /mnt/scratch
-    fstype: ext4
-    opts: defaults,nofail,discard
-    dump: '0'
-    passno: '0'
-    state: mounted
-
-- name: Grant git user ownership of everything in /srv/git
+- name: Create /srv/git and grant git user ownership of everything within
   ansible.builtin.file:
     path: /srv/git
     state: directory
@@ -83,3 +46,10 @@
     recurse: true
     owner: git
     mode: u+rwX
+
+- name: Create /srv/scratch
+  ansible.builtin.file:
+    path: /srv/git
+    state: directory
+    owner: root
+    mode: "01777"  # sticky + 0o777

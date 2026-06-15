@@ -8,7 +8,7 @@ then rsync_only=1
      shift
 fi
 
-backup_root=/mnt/scratch/backup/"$(hostname)"
+backup_root=/srv/scratch/backup/"$(hostname)"
 mkdir -p "$backup_root"
 
 jwodder_root="$(dirname "$(dirname "$(readlink -f "$0")")")"

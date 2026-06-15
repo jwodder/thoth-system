@@ -4,7 +4,4 @@
   become: true
   roles:
     - base
-    - admin
-    - skel
-    - backup
-    - utils
+    - services

@@ -1,2 +1,0 @@
----
-dailyreport_disks: ["/", "/srv/git", "/mnt/scratch"]  # noqa: var-naming[no-role-prefix]

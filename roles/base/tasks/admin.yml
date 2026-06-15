@@ -5,8 +5,7 @@
 
 - name: Store admin_user var for later roles
   ansible.builtin.set_fact:
-    # This makes the variable accessible to subsequent roles, right?
-    admin_user: "{{ admin_user }}"
+    admin_user: "{{ admin_user }}"  # noqa: var-naming[no-role-prefix]
 
 # Creating a new group with sudo powers is a workaround that allows the admin
 # user to use `sudo` without their home directory being defiled by the

@@ -177,6 +177,9 @@
   notify:
     - Restart journald
 
+- name: Set up admin user
+  ansible.builtin.import_tasks: admin.yml
+
 - name: Set up git user
   ansible.builtin.import_tasks: git.yml
 

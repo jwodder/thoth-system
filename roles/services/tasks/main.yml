@@ -1,4 +1,38 @@
 ---
+- name: Create jwodder package skeleton
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ admin_user }}"
+    mode: "0755"
+  with_items:
+    - "{{ jwodder_root }}/bin"
+    - "{{ jwodder_root }}/etc"
+    - "{{ jwodder_root }}/share"
+
+- name: Create secrets directory
+  ansible.builtin.file:
+    path: "{{ jwodder_root }}/etc/secret"
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: Install thoth-utils for admin user
+  community.general.pipx:
+    name: thoth-utils
+    source: git+https://github.com/jwodder/thoth-utils
+    state: latest
+  become: true
+  become_user: "{{ admin_user }}"
+
+- name: Create thoth-utils config file
+  ansible.builtin.template:
+    src: utils.toml
+    dest: "{{ jwodder_root }}/etc/utils.toml"
+    owner: "{{ admin_user }}"
+    mode: "0600"
+
 - name: Download & install Dropbox-Uploader
   ansible.builtin.get_url:
     url: https://raw.githubusercontent.com/andreafabrizi/Dropbox-Uploader/{{ backup_dropbox_uploader_version }}/dropbox_uploader.sh
@@ -51,19 +85,27 @@
     dest: /etc/systemd/system/{{ item }}
     mode: "0644"
   with_items:
+    - dailyreport.service
+    - dailyreport.timer
     - mkbackup.service
     - mkbackup.timer
-  register: backup_units
+    - update-dns.service
+    - update-dns.timer
+  register: services_units
 
-# This has to run before we can enable the timer, so using a handler isn't an
+# This has to run before we can enable the timers, so using a handler isn't an
 # option here.
 - name: Reload systemd  # noqa: no-handler
   ansible.builtin.systemd:
     daemon_reload: true
-  when: backup_units is changed
+  when: services_units is changed
 
-- name: Enable & start systemd timer
+- name: Enable & start systemd timers
   ansible.builtin.systemd:
-    name: mkbackup.timer
+    name: "{{ item }}"
     enabled: true
     state: started
+  with_items:
+    - dailyreport.timer
+    - mkbackup.timer
+    - update-dns.timer

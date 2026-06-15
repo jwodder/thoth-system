@@ -1,2 +1,6 @@
 ---
+admin_user: admin  # noqa: var-naming[no-role-prefix]
+admin_gecos: 'Administrator'  # noqa: var-naming[no-role-prefix]
+admin_authorized_keys: []  # noqa: var-naming[no-role-prefix]
+
 git_authorized_keys: []  # noqa: var-naming[no-role-prefix]

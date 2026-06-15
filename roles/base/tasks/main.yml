@@ -5,6 +5,7 @@
       - aptitude
       - ca-certificates
       - curl
+      - dma
       - fail2ban
       - fzf
       - git

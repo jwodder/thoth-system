@@ -69,3 +69,11 @@
     LANG: C.UTF-8
     LC_ALL: C.UTF-8
     PATH: '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/{{ admin_user }}/.local/bin'
+
+- name: Send mail for root to admin user
+  ansible.builtin.lineinfile:
+    dest: /etc/aliases
+    line: 'root: {{ admin_user }}'
+    create: true
+    owner: root
+    mode: "0644"

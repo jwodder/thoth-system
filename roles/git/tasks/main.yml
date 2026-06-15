@@ -27,15 +27,38 @@
     manage_dir: true
   with_items: "{{ git_authorized_keys }}"
 
-- name: Format attached drive
-  community.general.filesystem:
-    dev: /dev/sda
-    fstype: ext4
+- name: Partition attached drive
+  # Based on my reading of the module source, if the partition already exists
+  # and the label & flags have the values given here, then — as long as
+  # `resize` is set to `false` — nothing will be altered.
+  #
+  # However, if a drive gets swapped around and the new sda has one partition
+  # but not two, then Bad Things are likely — but what kind, exactly?
+  community.general.parted:
+    device: /dev/sda
+    number: "{{ item.number }}"
+    state: present
+    resize: false
+    flags: []
+    label: gpt
+    part_start: "{{ item.part_start }}"
+    part_end: "{{ item.part_end }}"
+    fs_type: ext4
+  loop:
+    - {number: 1, part_start: 0%, part_end: 50%}
+    - {number: 2, part_start: 50%, part_end: 100%}
 
-- name: Get UUID of attached drive
-  ansible.builtin.command: blkid -o value -s UUID /dev/sda
-  changed_when: false
-  register: git_blkid
+- name: Format attached drive partitions
+  community.general.filesystem:
+    dev: "/dev/{{ item }}"
+    fstype: ext4
+  with_items:
+    - sda1
+    - sda2
+
+- name: Re-collect facts to get new device UUIDs
+  ansible.builtin.setup:
+    gather_subset: "!all,!min,devices"
 
 - name: Create /srv/git
   ansible.builtin.file:
@@ -44,10 +67,26 @@
     owner: git
     mode: "0755"
 
-- name: Mount attached drive at /srv/git
+- name: Mount sda1 at /srv/git
   ansible.posix.mount:
-    src: "UUID={{ git_blkid.stdout }}"
+    src: "UUID={{ ansible_facts['devices']['sda']['partitions']['sda1']['uuid'] }}"
     path: /srv/git
+    fstype: ext4
+    opts: defaults,nofail
+    dump: '0'
+    passno: '0'
+    state: mounted
+
+- name: Create /mnt/scratch
+  ansible.builtin.file:
+    path: /mnt/scratch
+    state: directory
+    mode: "0755"
+
+- name: Mount sda2 at /mnt/scratch
+  ansible.posix.mount:
+    src: "UUID={{ ansible_facts['devices']['sda']['partitions']['sda2']['uuid'] }}"
+    path: /mnt/scratch
     fstype: ext4
     opts: defaults,nofail
     dump: '0'

@@ -54,7 +54,7 @@
     src: "UUID={{ ansible_facts['devices'][base_drive_name]['partitions'][base_drive_name + '1']['uuid'] }}"
     path: /srv/git
     fstype: ext4
-    opts: defaults,nofail
+    opts: defaults,nofail,discard
     dump: '0'
     passno: '0'
     state: mounted
@@ -70,7 +70,7 @@
     src: "UUID={{ ansible_facts['devices'][base_drive_name]['partitions'][base_drive_name + '2']['uuid'] }}"
     path: /mnt/scratch
     fstype: ext4
-    opts: defaults,nofail
+    opts: defaults,nofail,discard
     dump: '0'
     passno: '0'
     state: mounted

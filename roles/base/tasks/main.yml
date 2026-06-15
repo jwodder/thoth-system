@@ -121,7 +121,7 @@
     line: 'ENABLED=0'
 
 - name: Configure APT
-  ansible.builtin.copy:
+  ansible.builtin.template:
     src: apt.conf
     dest: /etc/apt/apt.conf.d/99jwodder
     owner: root

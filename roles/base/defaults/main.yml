@@ -1,2 +1,2 @@
 ---
-git_authorized_keys: []
+git_authorized_keys: []  # noqa: var-naming[no-role-prefix]

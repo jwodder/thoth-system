@@ -15,4 +15,6 @@ dynamic_dns_subdomain: thoth
 
 mailgun_domain: mg.varonathe.org
 
+# drive_id: ???  # TODO
+
 # vim:set syntax=yaml:

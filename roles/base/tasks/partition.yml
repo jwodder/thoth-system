@@ -1,13 +1,21 @@
 ---
+- name: Determine drive name
+  ansible.builtin.set_fact:
+    base_drive_name: "{{ item.key }}"
+  with_dict: "{{ ansible_facts['devices'] }}"
+  when: "(item.value.links.ids[0] | default()) == drive_id"
+
+- name: Assert that drive name was found
+  ansible.builtin.assert:
+    that: base_drive_name is defined
+    fail_msg: "Could not find drive with ID {{ drive_id }}"
+
 - name: Partition attached drive
   # Based on my reading of the module source, if the partition already exists
   # and the label & flags have the values given here, then — as long as
   # `resize` is set to `false` — nothing will be altered.
-  #
-  # However, if a drive gets swapped around and the new sda has one partition
-  # but not two, then Bad Things are likely — but what kind, exactly?
   community.general.parted:
-    device: /dev/sda
+    device: "/dev/disk/by-id/{{ drive_id }}"
     number: "{{ item.number }}"
     state: present
     resize: false
@@ -22,11 +30,11 @@
 
 - name: Format attached drive partitions
   community.general.filesystem:
-    dev: "/dev/{{ item }}"
+    dev: "/dev/disk/by-id/{{ drive_id }}-part{{ item }}"
     fstype: ext4
   with_items:
-    - sda1
-    - sda2
+    - 1
+    - 2
   register: base_format
 
 - name: Re-collect facts to get new device UUIDs  # noqa: no-handler
@@ -41,9 +49,9 @@
     owner: git
     mode: "0755"
 
-- name: Mount sda1 at /srv/git
+- name: Mount drive partition 1 at /srv/git
   ansible.posix.mount:
-    src: "UUID={{ ansible_facts['devices']['sda']['partitions']['sda1']['uuid'] }}"
+    src: "UUID={{ ansible_facts['devices'][base_drive_name]['partitions'][base_drive_name + '1']['uuid'] }}"
     path: /srv/git
     fstype: ext4
     opts: defaults,nofail
@@ -59,7 +67,7 @@
 
 - name: Mount sda2 at /mnt/scratch
   ansible.posix.mount:
-    src: "UUID={{ ansible_facts['devices']['sda']['partitions']['sda2']['uuid'] }}"
+    src: "UUID={{ ansible_facts['devices'][base_drive_name]['partitions'][base_drive_name + '2']['uuid'] }}"
     path: /mnt/scratch
     fstype: ext4
     opts: defaults,nofail

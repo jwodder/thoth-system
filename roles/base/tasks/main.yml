@@ -180,3 +180,4 @@
 
 - name: Set up attached drive
   ansible.builtin.import_tasks: partition.yml
+  when: drive_id is defined

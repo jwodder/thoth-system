@@ -5,4 +5,4 @@ Description=Make backup of data
 Type=oneshot
 # Run every other Sunday:
 ExecStart=/bin/bash -c '(( ($(date +%s) / 86400 - 3) % 14 )) || {{ jwodder_root }}/bin/mkbackup'
-ExecStopPost=/home/{{ admin_user|quote }}/.local/bin/mail-systemd-failure {{ jwodder_root|quote }}/etc/utils.toml %n
+ExecStopPost=/usr/bin/sudo -u {{ admin_user|quote }} /home/{{ admin_user|quote }}/.local/bin/mail-systemd-failure %n

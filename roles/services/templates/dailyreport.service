@@ -3,7 +3,7 @@ Description=Send daily report e-mail
 
 [Service]
 Type=oneshot
-ExecStart=/home/{{ admin_user|quote }}/.local/bin/dailyreport {{ jwodder_root|quote }}/etc/utils.toml
-ExecStopPost=/home/{{ admin_user|quote }}/.local/bin/mail-systemd-failure {{ jwodder_root|quote }}/etc/utils.toml %n
+ExecStart=/home/{{ admin_user|quote }}/.local/bin/dailyreport
+ExecStopPost=/home/{{ admin_user|quote }}/.local/bin/mail-systemd-failure %n
 User={{ admin_user }}
 Group={{ admin_user }}

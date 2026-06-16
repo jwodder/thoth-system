@@ -26,10 +26,17 @@
   become: true
   become_user: "{{ admin_user }}"
 
+- name: Create ~admin/.config/thoth-utils
+  ansible.builtin.file:
+    path: "{{ admin_user }}/.config/thoth-utils"
+    state: directory
+    owner: "{{ admin_user }}"
+    mode: "0755"
+
 - name: Create thoth-utils config file
   ansible.builtin.template:
-    src: utils.toml
-    dest: "{{ jwodder_root }}/etc/utils.toml"
+    src: config.toml
+    dest: "{{ admin_user }}/.config/thoth-utils/config.toml"
     owner: "{{ admin_user }}"
     mode: "0600"
 

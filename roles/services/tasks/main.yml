@@ -1,23 +1,4 @@
 ---
-- name: Create jwodder package skeleton
-  ansible.builtin.file:
-    path: "{{ item }}"
-    state: directory
-    owner: "{{ admin_user }}"
-    mode: "0755"
-  with_items:
-    - "{{ jwodder_root }}/bin"
-    - "{{ jwodder_root }}/etc"
-    - "{{ jwodder_root }}/share"
-
-- name: Create secrets directory
-  ansible.builtin.file:
-    path: "{{ jwodder_root }}/etc/secret"
-    state: directory
-    owner: root
-    group: root
-    mode: "0700"
-
 - name: Install thoth-utils for admin user
   community.general.pipx:
     name: thoth-utils
@@ -55,20 +36,20 @@
 - name: Install bin/mkbackup
   ansible.builtin.template:
     src: mkbackup
-    dest: "{{ jwodder_root }}/bin/mkbackup"
-    owner: "{{ admin_user }}"
+    dest: /usr/local/bin/mkbackup
+    owner: root
     mode: "0755"
 
 - name: Install share/backup.exclude
   ansible.builtin.copy:
     src: backup.exclude
-    dest: "{{ jwodder_root }}/share/backup.exclude"
-    owner: "{{ admin_user }}"
+    dest: /usr/local/etc/mkbackup/backup.exclude
+    owner: root
     mode: "0644"
 
 - name: Store Dropbox credentials
   ansible.builtin.copy:
-    dest: "{{ jwodder_root }}/etc/secret/dropbox_uploader"
+    dest: /usr/local/etc/mkbackup/dropbox_uploader
     content: |
       CONFIGFILE_VERSION=2.0
       OAUTH_APP_KEY={{ backup_dropbox_oauth_app_key | quote }}
@@ -80,10 +61,10 @@
 
 - name: Store backup recipient pubkey
   ansible.builtin.copy:
-    dest: "{{ jwodder_root }}/etc/backup-recipient.txt"
+    dest: /usr/local/etc/mkbackup/backup-recipient.txt
     content: |
       {{ backup_recipient_pubkey }}
-    owner: "{{ admin_user }}"
+    owner: root
     mode: "0644"
 
 - name: Configure systemd units

@@ -3,6 +3,10 @@
 
 set -eux -o pipefail
 
+if [[ ":$PATH:" != *":/usr/local/bin:"* ]]
+then PATH="/usr/local/bin:$PATH"
+fi
+
 if [ "$1" = "--rsync-only" ]
 then rsync_only=1
      shift
@@ -11,13 +15,10 @@ fi
 backup_root=/srv/scratch/backup/"$(hostname)"
 mkdir -p "$backup_root"
 
-jwodder_root="$(dirname "$(dirname "$(readlink -f "$0")")")"
-
-for dir in /home /srv/git "$jwodder_root"
+for dir in /home /srv/git
 do if [ -e "$dir" ]
    then rsync -avRF --delete --delete-excluded \
-              --exclude="$jwodder_root/etc/secret" \
-              --exclude-from="$jwodder_root/share/backup.exclude" \
+              --exclude-from=/usr/local/etc/mkbackup/backup.exclude \
               --exclude-from=<(find "$dir" -type d -exec test -e {}/.norsync ';' -prune -print) \
               "$dir" "$backup_root"
    else rm -rf "$backup_root$dir"
@@ -31,10 +32,8 @@ crontab -l -u {{ admin_user | quote }} > "$backup_root"/{{ admin_user | quote }}
 cd "$backup_root/.."
 outfile=/var/backups/`hostname`-`date -u +%Y%m%dT%H%M%SZ`.tgz.age
 tar zc "$(basename "$backup_root")" \
-    | /usr/local/bin/age -e -R "$jwodder_root/etc/backup-recipient.txt" -o "$outfile"
+    | age -e -R /usr/local/etc/mkbackup/backup-recipient.txt -o "$outfile"
 
-/usr/local/bin/dropbox_uploader \
-    -f "$jwodder_root/etc/secret/dropbox_uploader" \
-    upload "$outfile" /Backups/
+dropbox_uploader -f /usr/local/etc/mkbackup/dropbox_uploader upload "$outfile" /Backups/
 
 rm -f "$outfile"

@@ -3,27 +3,41 @@
   ansible.builtin.apt:
     name:
       - aptitude
+      - bash-completion
+      - bind9-host  # host
       - ca-certificates
+      - command-not-found
       - curl
       - dma
       - fail2ban
       - fzf
       - git
       - htop
+      - iputils-ping  # ping
       - jq
+      - manpages
       - moreutils
       - net-tools  # netstat
+      - netcat-openbsd  # nc
+      - openssh-client
+      - openssl
+      - patch
       - pipx
       - plocate
+      - procps  # ps
+      - psmisc  # pstree
       - python3
       - python3-pip
       - python3-requests  # Required for `install_age` module
       - python3-venv
       - ripgrep
+      - rsync
+      - tmux
       - tree
       - ufw
       - unattended-upgrades
       - unzip
+      - vim
       - wget
       - zip
     state: present

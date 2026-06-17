@@ -1,7 +1,7 @@
 ---
 - name: Install thoth-utils for admin user
   community.general.pipx:
-    name: thoth-utils
+    name: jwodder-thoth-utils
     source: git+https://github.com/jwodder/thoth-utils
     state: latest
   become: true
@@ -17,13 +17,13 @@
 - name: Create thoth-utils config file
   ansible.builtin.template:
     src: config.toml
-    dest: "{{ admin_user }}/.config/thoth-utils/config.toml"
+    dest: "/home/{{ admin_user }}/.config/thoth-utils/config.toml"
     owner: "{{ admin_user }}"
     mode: "0600"
 
 - name: Download & install Dropbox-Uploader
   ansible.builtin.get_url:
-    url: https://raw.githubusercontent.com/andreafabrizi/Dropbox-Uploader/{{ backup_dropbox_uploader_version }}/dropbox_uploader.sh
+    url: https://raw.githubusercontent.com/andreafabrizi/Dropbox-Uploader/{{ dropbox_uploader_version }}/dropbox_uploader.sh
     dest: /usr/local/bin/dropbox_uploader
     owner: root
     mode: "0755"

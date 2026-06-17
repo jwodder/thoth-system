@@ -37,6 +37,7 @@
     owner: root
     group: root
     mode: "0440"
+    create: true
     backup: true
 
 - name: Set admin's crontab variables

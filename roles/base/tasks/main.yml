@@ -77,6 +77,7 @@
     dest: /etc/rsyslog.d/50-default.conf
     regexp: '^#?{{ item.key }}\s+{{ item.value }}$'
     line: '{{ item.key }} {{ item.value }}'
+    create: true
     backup: true
   with_dict:
     "cron.*": /var/log/cron.log
@@ -120,20 +121,6 @@
     line: '\1 standard quiet # [1]'
     backrefs: true
     backup: true
-
-- name: Disable cruft in login message
-  ansible.builtin.command: mv -f /etc/update-motd.d/{{ item }} /etc/update-motd.d/{{ item }}.off
-  args:
-    removes: /etc/update-motd.d/{{ item }}
-  with_items:
-    - '00-header'
-    - '10-help-text'
-
-- name: Disable live news in MOTD
-  ansible.builtin.lineinfile:
-    dest: /etc/default/motd-news
-    regexp: '^\s*#?\s*ENABLED='
-    line: 'ENABLED=0'
 
 - name: Configure APT
   ansible.builtin.template:

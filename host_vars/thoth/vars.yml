@@ -15,6 +15,6 @@ dynamic_dns_subdomain: thoth
 
 mailgun_domain: mg.varonathe.org
 
-# drive_id: ???  # TODO
+drive_id: "usb-General_USB_Flash_Drive_037170000249-0:0"
 
 # vim:set syntax=yaml:

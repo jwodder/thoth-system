@@ -21,3 +21,6 @@
 
 - name: Enable new unattended-upgrades settings  # noqa: no-changed-when
   ansible.builtin.command: dpkg-reconfigure -f noninteractive unattended-upgrades
+
+- name: Regenerate locales  # noqa: no-changed-when
+  ansible.builtin.command: locale-gen

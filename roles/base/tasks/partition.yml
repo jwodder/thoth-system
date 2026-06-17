@@ -60,6 +60,7 @@
     follow: false
     recurse: true
     owner: git
+    group: staff
     mode: u+rwX
 
 - name: Create /srv/scratch

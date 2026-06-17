@@ -38,7 +38,7 @@
 
 - name: Create /srv
   ansible.builtin.file:
-    path: /srv/git
+    path: /srv
     state: directory
     owner: root
     mode: "0755"

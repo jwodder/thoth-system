@@ -9,7 +9,7 @@
 
 - name: Create ~admin/.config/thoth-utils
   ansible.builtin.file:
-    path: "{{ admin_user }}/.config/thoth-utils"
+    path: "/home/{{ admin_user }}/.config/thoth-utils"
     state: directory
     owner: "{{ admin_user }}"
     mode: "0755"
@@ -37,6 +37,13 @@
   ansible.builtin.template:
     src: mkbackup
     dest: /usr/local/bin/mkbackup
+    owner: root
+    mode: "0755"
+
+- name: Create /usr/local/etc/mkbackup
+  ansible.builtin.file:
+    path: /usr/local/etc/mkbackup
+    state: directory
     owner: root
     mode: "0755"
 

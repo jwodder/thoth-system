@@ -128,13 +128,12 @@ def main() -> None:
 
 
 def tarfilter(member: tarfile.TarInfo, path: str) -> tarfile.TarInfo | None:
-    member = tarfile.data_filter(member, path)
-    if member is not None:
-        p = PurePosixPath(member.name)
-        if member.isfile() and len(p.parts) == 2 and member.mode & 0o100:
-            return member.replace(name=p.name)
-        else:
-            return None
+    p = PurePosixPath(member.name)
+    if len(p.parts) == 2:
+        member = member.replace(name=p.name)
+        member = tarfile.data_filter(member, path)
+        if member is not None and member.isfile() and member.mode & 0o100:
+            return member
     return None
 
 

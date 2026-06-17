@@ -64,7 +64,7 @@
 
 - name: Create /srv/scratch
   ansible.builtin.file:
-    path: /srv/git
+    path: /srv/scratch
     state: directory
     owner: root
     mode: "01777"  # sticky + 0o777

@@ -17,6 +17,7 @@
       - jq
       - manpages
       - moreutils
+      - mutt
       - net-tools  # netstat
       - netcat-openbsd  # nc
       - openssh-client

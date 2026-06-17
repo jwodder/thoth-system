@@ -33,6 +33,7 @@
       - python3-venv
       - ripgrep
       - rsync
+      - rsyslog
       - tmux
       - tree
       - ufw

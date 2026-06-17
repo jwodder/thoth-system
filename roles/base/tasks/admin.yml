@@ -7,29 +7,10 @@
   ansible.builtin.set_fact:
     admin_user: "{{ admin_user }}"  # noqa: var-naming[no-role-prefix]
 
-# Creating a new group with sudo powers is a workaround that allows the admin
-# user to use `sudo` without their home directory being defiled by the
-# `.sudo_as_admin_successful` file.
-- name: Create sudmin group
-  ansible.builtin.group:
-    name: sudmin
-    state: present
-
-- name: Grant sudmin group sudo powers
-  ansible.builtin.lineinfile:
-    dest: /etc/sudoers.d/jwodder
-    line: '%sudmin ALL=(ALL:ALL) ALL'
-    validate: 'visudo -cf %s'
-    owner: root
-    group: root
-    mode: "0440"
-    create: true
-    backup: true
-
 - name: Create admin user
   ansible.builtin.user:
     name: "{{ admin_user }}"
-    groups: adm,staff,sudmin,users
+    groups: adm,staff,sudo,users
     # `adm` membership lets me read files in `/var/log` without the need for
     # `sudo`.
     append: true

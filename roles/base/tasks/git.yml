@@ -1,9 +1,4 @@
 ---
-- name: Add git-shell to /etc/shells
-  ansible.builtin.lineinfile:
-    dest: /etc/shells
-    line: /usr/bin/git-shell
-
 - name: Create git group
   ansible.builtin.group:
     name: git
@@ -15,7 +10,7 @@
     group: git
     groups: staff,users
     append: true
-    shell: /usr/bin/git-shell
+    shell: /bin/bash
     home: /home/git
     move_home: true
     comment: Git

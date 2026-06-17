@@ -62,6 +62,27 @@
   community.general.ufw:
     state: enabled
 
+- name: Enable basic locales
+  ansible.builtin.lineinfile:
+    dest: /etc/locale.gen
+    regexp: '^(#\s*)?{{ item }}\.UTF-8\s+UTF-8$'
+    line: '{{ item }}.UTF-8 UTF-8'
+    backup: true
+  with_items:
+    - C
+    - en_US
+  notify:
+    - Regenerate locales
+
+- name: Set default locale
+  ansible.builtin.lineinfile:
+    dest: /etc/locale.conf
+    regexp: '^{{ item }}='
+    line: '{{ item }}=C.UTF-8'
+  with_items:
+    - LANG
+    - LC_ALL
+
 - name: Keep UFW messages from being logged to files other than ufw.log
   ansible.builtin.lineinfile:
     dest: /etc/rsyslog.d/20-ufw.conf
@@ -179,18 +200,6 @@
     backup: true
   notify:
     - Restart journald
-
-- name: Enable basic locales
-  ansible.builtin.lineinfile:
-    dest: /etc/locale.gen
-    regexp: '^(#\s*)?{{ item }}\.UTF-8\s+UTF-8$'
-    line: '{{ item }}.UTF-8 UTF-8'
-    backup: true
-  with_items:
-    - C
-    - en_US
-  notify:
-    - Regenerate locales
 
 - name: Set up admin user
   ansible.builtin.import_tasks: admin.yml

@@ -1,1 +1,1 @@
-thoth ansible_host=thoth.local ansible_user=admin
+thoth ansible_host=thoth.local ansible_ssh_port=2244 ansible_user=admin

@@ -55,9 +55,12 @@
   community.general.ufw:
     rule: allow
     to_ip: any
-    to_port: 22
+    to_port: "{{ item }}"
     proto: any
     direction: in
+  with_items:
+    - 22
+    - 2244
 
 - name: Enable ufw
   community.general.ufw:

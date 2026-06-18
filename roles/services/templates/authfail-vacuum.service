@@ -1,0 +1,9 @@
+[Unit]
+Description=Delete old authfail database records
+
+[Service]
+Type=oneshot
+ExecStart=/home/{{ admin_user|quote }}/.local/bin/authfail --vacuum
+ExecStopPost=/home/{{ admin_user|quote }}/.local/bin/mail-systemd-failure %n
+User={{ admin_user }}
+Group={{ admin_user }}

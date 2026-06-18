@@ -80,6 +80,8 @@
     dest: /etc/systemd/system/{{ item }}
     mode: "0644"
   with_items:
+    - authfail-vacuum.service
+    - authfail-vacuum.timer
     - dailyreport.service
     - dailyreport.timer
     - mkbackup.service
@@ -101,6 +103,17 @@
     enabled: true
     state: started
   with_items:
+    - authfail-vacuum.timer
     - dailyreport.timer
     - mkbackup.timer
     - update-dns.timer
+
+- name: Configure logging of failed SSH logins
+  ansible.builtin.template:
+    src: 99-authfail.conf
+    dest: /etc/rsyslog.d/99-authfail.conf
+    owner: root
+    mode: "0644"
+    backup: true
+  notify:
+    - Restart rsyslog

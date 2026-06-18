@@ -1,0 +1,10 @@
+[Unit]
+Description=Delete old authfail database records (timer)
+
+[Timer]
+Unit=authfail-vacuum.service
+OnCalendar=weekly
+Persistent=true
+
+[Install]
+WantedBy=timers.target

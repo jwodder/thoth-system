@@ -7,9 +7,10 @@ if [[ ":$PATH:" != *":/usr/local/bin:"* ]]
 then PATH="/usr/local/bin:$PATH"
 fi
 
-if [ "$1" = "--rsync-only" ]
+if [ "${1:-}" = "--rsync-only" ]
 then rsync_only=1
      shift
+else rsync_only=
 fi
 
 backup_root=/srv/scratch/backup/"$(hostname)"

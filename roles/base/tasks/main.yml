@@ -64,16 +64,11 @@
     state: enabled
 
 - name: Enable basic locales
-  ansible.builtin.lineinfile:
-    dest: /etc/locale.gen
-    regexp: '^(#\s*)?{{ item }}\.UTF-8\s+UTF-8$'
-    line: '{{ item }}.UTF-8 UTF-8'
-    backup: true
-  with_items:
-    - C
-    - en_US
-  notify:
-    - Regenerate locales
+  community.general.locale_gen:
+    name:
+      - C.UTF-8
+      - en_US.UTF-8
+    state: present
 
 - name: Set default locale
   ansible.builtin.lineinfile:

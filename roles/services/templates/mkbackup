@@ -31,7 +31,7 @@ crontab -l -u {{ admin_user | quote }} > "$backup_root"/{{ admin_user | quote }}
 [ -z "$rsync_only" ] || exit 0
 
 cd "$backup_root/.."
-outfile=/var/backups/`hostname`-`date -u +%Y%m%dT%H%M%SZ`.tgz.age
+outfile=/srv/scratch/backup/`hostname`-`date -u +%Y%m%dT%H%M%SZ`.tgz.age
 tar zc "$(basename "$backup_root")" \
     | age -e -R /usr/local/etc/mkbackup/backup-recipient.txt -o "$outfile"
 

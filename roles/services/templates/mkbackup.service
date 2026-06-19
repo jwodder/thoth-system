@@ -4,5 +4,5 @@ Description=Make backup of data
 [Service]
 Type=oneshot
 # Run every other Sunday:
-ExecStart=/bin/bash -c '(( ($(date +%s) / 86400 - 3) % 14 )) || /usr/local/bin/mkbackup'
-ExecStopPost=/usr/bin/sudo -u {{ admin_user|quote }} /home/{{ admin_user|quote }}/.local/bin/mail-systemd-failure %n
+ExecStart=/bin/bash -c '(( ($(date +%%s) / 86400 - 3) % 14 )) || /usr/local/bin/mkbackup'
+ExecStopPost=/usr/bin/sudo -u {{ admin_user|quote }} --preserve-env=SERVICE_RESULT,INVOCATION_ID /home/{{ admin_user|quote }}/.local/bin/mail-systemd-failure %n

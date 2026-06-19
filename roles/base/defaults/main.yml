@@ -4,3 +4,5 @@ admin_gecos: 'Administrator'  # noqa: var-naming[no-role-prefix]
 admin_authorized_keys: []  # noqa: var-naming[no-role-prefix]
 
 git_authorized_keys: []  # noqa: var-naming[no-role-prefix]
+
+base_timezone: America/New_York

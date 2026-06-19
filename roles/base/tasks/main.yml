@@ -82,6 +82,10 @@
     - LANG
     - LC_ALL
 
+- name: Set timezone
+  community.general.timezone:
+    name: "{{ base_timezone }}"
+
 - name: Keep UFW messages from being logged to files other than ufw.log
   ansible.builtin.lineinfile:
     dest: /etc/rsyslog.d/20-ufw.conf

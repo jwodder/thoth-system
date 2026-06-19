@@ -96,20 +96,6 @@
   notify:
     - Restart rsyslog
 
-- name: Give some syslog facilities their own logfiles
-  ansible.builtin.lineinfile:
-    dest: /etc/rsyslog.d/50-default.conf
-    regexp: '^#?{{ item.key }}\s+{{ item.value }}$'
-    line: '{{ item.key }} {{ item.value }}'
-    mode: "0644"
-    create: true
-    backup: true
-  with_dict:
-    "cron.*": /var/log/cron.log
-    "user.*": -/var/log/user.log
-  notify:
-    - Restart rsyslog
-
 - name: Configure SSH
   ansible.builtin.copy:
     src: sshd.conf

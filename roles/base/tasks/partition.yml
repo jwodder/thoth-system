@@ -10,31 +10,32 @@
     that: base_drive_name is defined
     fail_msg: "Could not find drive with ID {{ drive_id }}"
 
-- name: Partition attached drive
-  # Based on my reading of the module source, if the partition already exists
-  # and the label & flags have the values given here, then — as long as
-  # `resize` is set to `false` — nothing will be altered.
-  community.general.parted:
-    device: "/dev/disk/by-id/{{ drive_id }}"
-    number: 1
-    state: present
-    resize: false
-    flags: []
-    label: gpt
-    part_start: 0%
-    part_end: 100%
-    fs_type: ext4
-
-- name: Format attached drive
-  community.general.filesystem:
-    dev: "/dev/disk/by-id/{{ drive_id }}-part1"
-    fstype: ext4
-  register: base_format
-
-- name: Re-collect facts to get new device UUID  # noqa: no-handler
-  ansible.builtin.setup:
-    gather_subset: "!all,!min,devices"
-  when: base_format is changed
+# Commented out to avoid any accidental reformattings:
+# - name: Partition attached drive
+#   # Based on my reading of the module source, if the partition already exists
+#   # and the label & flags have the values given here, then — as long as
+#   # `resize` is set to `false` — nothing will be altered.
+#   community.general.parted:
+#     device: "/dev/disk/by-id/{{ drive_id }}"
+#     number: 1
+#    state: present
+#     resize: false
+#     flags: []
+#     label: gpt
+#     part_start: 0%
+#     part_end: 100%
+#     fs_type: ext4
+#
+# - name: Format attached drive
+#   community.general.filesystem:
+#     dev: "/dev/disk/by-id/{{ drive_id }}-part1"
+#     fstype: ext4
+#   register: base_format
+#
+# - name: Re-collect facts to get new device UUID  # noqa: no-handler
+#   ansible.builtin.setup:
+#     gather_subset: "!all,!min,devices"
+#   when: base_format is changed
 
 - name: Create /srv
   ansible.builtin.file:

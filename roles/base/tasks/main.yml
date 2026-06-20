@@ -15,7 +15,6 @@
       - htop
       - iputils-ping  # ping
       - jq
-      - libpam-lastlog2
       - manpages
       - moreutils
       - mutt
@@ -105,23 +104,6 @@
     mode: "0644"
   notify:
     - Restart SSHd
-
-- name: Configure PAM to show a "Last login" message
-  ansible.builtin.lineinfile:
-    dest: /etc/pam.d/sshd
-    insertafter: 'pam_env'
-    line: 'session optional pam_lastlog2.so'
-    backup: true
-
-- name: Ensure /var/lib/lastlog exists
-  ansible.builtin.file:
-    # libpam-lastlog2 depends on being able to write to this directory, but it
-    # doesn't create it (as of v2.41-5), resulting in errors.
-    path: /var/lib/lastlog
-    state: directory
-    owner: root
-    group: root
-    mode: "0755"
 
 - name: Configure mail behavior on SSH login
   # This change accomplishes the following:

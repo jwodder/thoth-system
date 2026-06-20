@@ -3,7 +3,7 @@ Description=Make backup of data (timer)
 
 [Timer]
 Unit=mkbackup.service
-OnCalendar=Sun *-*-* 00:00:00
+OnCalendar=Sun *-*-* 00:45:00
 Persistent=true
 
 [Install]

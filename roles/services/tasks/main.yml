@@ -6,6 +6,8 @@
     state: latest
   become: true
   become_user: "{{ admin_user }}"
+  notify:
+    - Restart authfail.service if running
 
 - name: Create ~admin/.config/thoth-utils
   ansible.builtin.file:
@@ -80,6 +82,8 @@
     dest: /etc/systemd/system/{{ item }}
     mode: "0644"
   with_items:
+    - authfail.service
+    - authfail.socket
     - authfail-vacuum.service
     - authfail-vacuum.timer
     - dailyreport.service
@@ -90,25 +94,26 @@
     - update-dns.timer
   register: services_units
 
-# This has to run before we can enable the timers, so using a handler isn't an
+# This has to run before we can enable stuff, so using a handler isn't an
 # option here.
 - name: Reload systemd  # noqa: no-handler
   ansible.builtin.systemd:
     daemon_reload: true
   when: services_units is changed
 
-- name: Enable & start systemd timers
+- name: Enable & start systemd timers & sockets
   ansible.builtin.systemd:
     name: "{{ item }}"
     enabled: true
     state: started
   with_items:
+    - authfail.socket
     - authfail-vacuum.timer
     - dailyreport.timer
     - mkbackup.timer
     - update-dns.timer
 
-- name: Configure logging of failed SSH logins
+- name: Configure rsyslog to send failed SSH logins to FIFO
   ansible.builtin.template:
     src: 99-authfail.conf
     dest: /etc/rsyslog.d/99-authfail.conf

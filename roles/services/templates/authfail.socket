@@ -1,0 +1,9 @@
+[Unit]
+Description=Record failed SSH logins (FIFO)
+
+[Socket]
+ListenFIFO=/run/authfail.sock
+Service=authfail.service
+
+[Install]
+WantedBy=sockets.target

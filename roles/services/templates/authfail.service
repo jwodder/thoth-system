@@ -1,0 +1,12 @@
+[Unit]
+Description=Record failed SSH logins
+Requires=authfail.socket
+
+[Service]
+Type=exec
+ExecStart=/home/{{ admin_user|quote }}/.local/bin/authfail
+ExecStopPost=/home/{{ admin_user|quote }}/.local/bin/mail-systemd-failure %n
+StandardInput=socket
+User={{ admin_user }}
+Group={{ admin_user }}
+Restart=no

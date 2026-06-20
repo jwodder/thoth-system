@@ -1,0 +1,10 @@
+[Unit]
+Description=Garbage-collect Git repos (timer)
+
+[Timer]
+Unit=gc-srv-git.service
+OnCalendar=monthly
+Persistent=true
+
+[Install]
+WantedBy=timers.target

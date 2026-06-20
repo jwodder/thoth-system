@@ -88,6 +88,8 @@
     - authfail-vacuum.timer
     - dailyreport.service
     - dailyreport.timer
+    - gc-srv-git.service
+    - gc-srv-git.timer
     - mkbackup.service
     - mkbackup.timer
     - update-dns.service
@@ -110,6 +112,7 @@
     - authfail.socket
     - authfail-vacuum.timer
     - dailyreport.timer
+    - gc-srv-git.timer
     - mkbackup.timer
     - update-dns.timer
 

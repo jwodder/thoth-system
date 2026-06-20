@@ -1,0 +1,7 @@
+[Unit]
+Description=Garbage-collect Git repos
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/sudo -u git /usr/bin/find /srv/git -type d -name '?*.git' -print -prune -exec git -C {} gc ';'
+ExecStopPost=/usr/bin/sudo -u {{ admin_user|quote }} --preserve-env=SERVICE_RESULT,INVOCATION_ID /home/{{ admin_user|quote }}/.local/bin/mail-systemd-failure %n

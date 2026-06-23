@@ -10,6 +10,7 @@
       - curl
       - dma
       - fail2ban
+      - fastfetch
       - fzf
       - git
       - htop

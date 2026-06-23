@@ -58,3 +58,20 @@
     create: true
     owner: root
     mode: "0644"
+
+- name: Create ~admin/.config/fastfetch/
+  ansible.builtin.file:
+    path: "/home/{{ admin_user }}/.config/fastfetch"
+    state: directory
+    owner: "{{ admin_user }}"
+    group: "{{ admin_user }}"
+    mode: "0755"
+
+- name: Configure fastfetch for admin user
+  ansible.builtin.copy:
+    src: fastfetch.jsonc
+    dest: "/home/{{ admin_user }}/.config/fastfetch/config.jsonc"
+    owner: "{{ admin_user }}"
+    group: "{{ admin_user }}"
+    mode: "0644"
+    backup: true

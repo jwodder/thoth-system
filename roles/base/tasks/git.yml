@@ -20,4 +20,4 @@
     user: git
     key: "{{ item }}"
     manage_dir: true
-  with_items: "{{ git_authorized_keys }}"
+  loop: "{{ git_authorized_keys | flatten(levels=1) }}"

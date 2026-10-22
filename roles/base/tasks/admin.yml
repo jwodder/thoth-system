@@ -27,7 +27,7 @@
     user: "{{ admin_user }}"
     key: "{{ item }}"
     manage_dir: true
-  with_items: "{{ admin_authorized_keys }}"
+  loop: "{{ admin_authorized_keys | flatten(levels=1) }}"
 
 - name: Give admin special sudo powers
   ansible.builtin.lineinfile:

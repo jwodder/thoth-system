@@ -81,7 +81,7 @@
     src: "{{ item }}"
     dest: /etc/systemd/system/{{ item }}
     mode: "0644"
-  with_items:
+  loop:
     - authfail.service
     - authfail.socket
     - authfail-vacuum.service
@@ -108,7 +108,7 @@
     name: "{{ item }}"
     enabled: true
     state: started
-  with_items:
+  loop:
     - authfail.socket
     - authfail-vacuum.timer
     - dailyreport.timer

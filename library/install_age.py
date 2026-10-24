@@ -2,14 +2,19 @@
 from __future__ import annotations
 from dataclasses import dataclass
 import json
-from pathlib import PurePosixPath
+import os.path
+from pathlib import Path, PurePosixPath
 import re
+import shutil
 import subprocess
 import tarfile
 import tempfile
 import traceback
+from typing import Any
+from urllib.request import Request, urlopen
 from ansible.module_utils.basic import AnsibleModule
-import requests
+
+USER_AGENT = "install_age.py/0.0.0"
 
 
 @dataclass(order=True)
@@ -73,58 +78,63 @@ def main() -> None:
         module.exit_json(changed=False)
     else:
         try:
-            with requests.Session() as s:
-                r = s.get(
-                    "https://api.github.com/repos/FiloSottile/age/releases/latest"
-                )
-                r.raise_for_status()
-                latest_tag = r.json()["tag_name"]
-                try:
-                    latest_version = Version.parse(latest_tag)
-                except ValueError as e:
-                    module.fail_json(msg=f"failed to parse latest tag: {e}")
-                if latest_version == installed_version:
-                    module.exit_json(changed=False)
-                if not module.check_mode:
-                    r = subprocess.run(
-                        ["dpkg", "--print-architecture"],
-                        check=True,
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.DEVNULL,
-                        text=True,
-                        encoding="utf-8",
-                    )
-                    arch = r.stdout.strip()
-                    with tempfile.NamedTemporaryFile() as tmpfile:
-                        with s.get(
-                            f"https://github.com/FiloSottile/age/releases/download/{latest_tag}/age-{latest_tag}-linux-{arch}.tar.gz",
-                            stream=True,
-                        ) as r:
-                            r.raise_for_status()
-                            for chunk in r.iter_content(65535):
-                                tmpfile.write(chunk)
-                        tmpfile.flush()
-                        tmpfile.seek(0)
-                        with tarfile.open(fileobj=tmpfile) as tar:
-                            tar.extractall(path="/usr/local/bin", filter=tarfilter)
-                module.exit_json(changed=True)
-        except requests.HTTPError as e:
-            if 400 <= e.response.status_code < 500:
-                msg = "{0.status_code} Client Error: {0.reason} for URL: {0.url}\n"
-            elif 500 <= e.response.status_code < 600:
-                msg = "{0.status_code} Server Error: {0.reason} for URL: {0.url}\n"
-            else:
-                msg = "{0.status_code} Unknown Error: {0.reason} for URL: {0.url}\n"
-            msg = msg.format(e.response)
+            data = get_json(
+                "https://api.github.com/repos/FiloSottile/age/releases/latest"
+            )
+            latest_tag = data["tag_name"]
             try:
-                resp = e.response.json()
-            except ValueError:
-                msg += e.response.text
-            else:
-                msg += json.dumps(resp, sort_keys=True, indent=4)
-            module.fail_json(msg=msg)
+                latest_version = Version.parse(latest_tag)
+            except ValueError as e:
+                module.fail_json(msg=f"failed to parse latest tag: {e}")
+            if latest_version == installed_version:
+                module.exit_json(changed=False)
+            if not module.check_mode:
+                r = subprocess.run(
+                    ["dpkg", "--print-architecture"],
+                    check=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.DEVNULL,
+                    text=True,
+                    encoding="utf-8",
+                )
+                arch = r.stdout.strip()
+                tarpath = download_to_tempfile(
+                    f"https://github.com/FiloSottile/age/releases/download/{latest_tag}/age-{latest_tag}-linux-{arch}.tar.gz",
+                )
+                try:
+                    with tarfile.open(tarpath) as tar:
+                        tar.extractall(path="/usr/local/bin", filter=tarfilter)
+                finally:
+                    tarpath.unlink()
+            module.exit_json(changed=True)
         except Exception:
             module.fail_json(msg=traceback.format_exc())
+
+
+def get_json(url: str) -> Any:
+    req = Request(url, headers={"User-Agent": USER_AGENT})
+    with urlopen(req) as r:
+        return json.load(r)
+
+
+def download_file(url: str, path: Path) -> None:
+    req = Request(url, headers={"User-Agent": USER_AGENT})
+    with urlopen(req) as r:
+        with open(path, "wb") as fp:
+            shutil.copyfileobj(r, fp)
+        if "content-length" in r.headers:
+            size = int(r.headers["Content-Length"])
+            fsize = os.path.getsize(path)
+            if fsize < size:
+                raise RuntimeError(f"{url}: only {fsize} out of {size} bytes received")
+
+
+def download_to_tempfile(url: str) -> Path:
+    fd, tmpfile = tempfile.mkstemp()
+    os.close(fd)
+    p = Path(tmpfile)
+    download_file(url, p)
+    return p
 
 
 def tarfilter(member: tarfile.TarInfo, path: str) -> tarfile.TarInfo | None:
